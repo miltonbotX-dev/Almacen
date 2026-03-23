@@ -1,1 +1,363 @@
-página principal
+
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registro de Ternos - Telas con Tallas</title>
+    <!-- Font Awesome para iconos -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        table { border-collapse: collapse; width: 100%; margin-top: 20px; }
+        th, td { border: 1px solid #ddd; padding: 8px; text-align: left; vertical-align: top; }
+        th { background-color: #f2f2f2; }
+        th:nth-child(1), td:nth-child(1) { width: 25%; }
+        th:nth-child(2), td:nth-child(2) { width: 55%; }
+        th:nth-child(3), td:nth-child(3) { width: 15%; }               
+        .subtable { width: 100%; margin-top: 5px; background: #f9f9f9; }
+        .subtable th, .subtable td { padding: 4px; font-size: 14px; }
+        .subtable th { background-color: #e0e0e0; }
+        .subtable input { width: 80px; text-align: right; }        
+        .description-cell textarea { 
+            width: 100%; box-sizing: border-box; 
+            white-space: normal; word-wrap: break-word; 
+            resize: vertical; min-height: 40px;
+        }
+        .description-cell { position: relative; }
+        .description-cell::after { 
+            content: attr(data-full-text); 
+            position: absolute; top: 100%; left: 0; right: 0; 
+            background: #f9f9f9; border: 1px solid #ddd; padding: 5px; 
+            display: none; z-index: 10; white-space: pre-wrap; 
+        }
+        .description-cell:hover::after { display: block; }
+        
+        .expanded { display: table-row; } /* Cambiado para que se comporte como fila de tabla */
+        .expanded.hidden { display: none; }
+        
+        input, select, textarea { 
+            width: 100%; box-sizing: border-box; 
+            border: 1px solid #ccc; 
+        }
+        input:focus, textarea:focus, select:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 3px rgba(76, 175, 80, 0.3);
+        }
+        input:-webkit-autofill, textarea:-webkit-autofill {
+            -webkit-box-shadow: 0 0 0 30px white inset !important;
+            -webkit-text-fill-color: #333 !important;
+            transition: background-color 5000s ease-in-out 0s;
+        }
+        
+        button { padding: 5px 5px; margin: 3px; cursor: pointer; border: none; color: white;border-radius:8px; }
+        .btn-save { background-color: #E65100; }
+        .btn-delete { background-color: #f44336; }
+        .btn-expand { 
+            background-color: #3949AB; 
+            font-size: 12px; padding: 5px 5px; 
+        }
+        .btn-expand i { font-size: 10px; margin-right: 2px; }
+               
+        form { margin-bottom: 20px; }
+        label { display: block; margin-bottom: 5px; }
+        .talla-group { display: inline-block; margin: 5px; width: 120px; }
+        .talla-group input[type="number"] { width: 70px; }
+        .talla-group label { font-size: 12px; }
+        #tallas-section { border: 1px solid #ddd; padding: 10px; margin: 10px 0; background: #f9f9f9; }
+    </style>
+</head>
+<body>
+    <h1>Ternos</h1>    
+
+    <!-- Formulario para agregar nuevo registro -->
+    <form id="addForm">
+        <label for="fabricType">Tipo de Tela:</label>
+        <input type="text" id="fabricType" required>
+
+        <label for="description">Descripción:</label>
+        <textarea id="description" rows="3" placeholder="Ej: Tela lino Berona: es una tela gruesa, ideal para prendas de invierno..." required></textarea>
+
+        <div id="tallas-section">
+            <h4>Tallas disponibles y precios:</h4>
+            <div class="talla-group">
+                <label><input type="checkbox" value="XS"> XS</label>
+                <input type="number" class="price-xs" step="0.01" min="0" placeholder="Precio">
+            </div>
+            <div class="talla-group">
+                <label><input type="checkbox" value="S"> S</label>
+                <input type="number" class="price-s" step="0.01" min="0" placeholder="Precio">
+            </div>
+            <div class="talla-group">
+                <label><input type="checkbox" value="M"> M</label>
+                <input type="number" class="price-m" step="0.01" min="0" placeholder="Precio">
+            </div>
+            <div class="talla-group">
+                <label><input type="checkbox" value="L"> L</label>
+                <input type="number" class="price-l" step="0.01" min="0" placeholder="Precio">
+            </div>
+            <div class="talla-group">
+                <label><input type="checkbox" value="XL"> XL</label>
+                <input type="number" class="price-xl" step="0.01" min="0" placeholder="Precio">
+            </div>
+            <div class="talla-group">
+                <label><input type="checkbox" value="XXL"> XXL</label>
+                <input type="number" class="price-xxl" step="0.01" min="0" placeholder="Precio">
+            </div>
+        </div>
+
+        <button type="submit" class="btn-save">Agregar Tela</button>
+    </form>
+
+    <!-- Tabla para mostrar registros -->
+    <table id="clothingTable">
+        <thead>
+            <tr>
+                <th>Tipo de Tela</th>
+                <th>Descripción</th>
+                <th>Acciones</th>
+            </tr>
+        </thead>
+        <tbody id="tableBody">
+            <!-- Los datos se cargarán aquí dinámicamente -->
+        </tbody>
+    </table>
+
+    <script>
+        // Tallas disponibles
+        const availableSizes = ['XS', 'S', 'M', 'L', 'XL', 'XXL'];
+
+        // Cargar datos del localStorage al iniciar
+        let clothingData = JSON.parse(localStorage.getItem('clothingData')) || [];
+
+        // Migración para datos viejos (de versiones anteriores)
+        clothingData = clothingData.map(item => {
+            if (item.size && !item.sizes) {
+                return {
+                    fabricType: item.fabricType || item.fabric || '', // Soporte para nombres viejos
+                    description: item.description || '',
+                    sizes: { [item.size]: item.price || 0 }
+                };
+            }
+            // Asegurar que sizes existe
+            if (!item.sizes) {
+                item.sizes = {};
+            }
+            return item;
+        });
+
+        // Función para renderizar la tabla principal
+        function renderTable() {
+            const tbody = document.getElementById('tableBody');
+            tbody.innerHTML = '';
+            clothingData.forEach((item, index) => {
+                const row = tbody.insertRow();
+                
+                // Celda de tipo de tela
+                const fabricCell = row.insertCell();
+                fabricCell.innerHTML = `<input type="text" value="${item.fabricType || ''}" onchange="updateItem(${index}, 'fabricType', this.value)">`;
+                
+                // Celda de descripción
+                const descCell = row.insertCell();
+                descCell.className = 'description-cell';
+                descCell.setAttribute('data-full-text', item.description || '');
+                descCell.innerHTML = `
+                    <textarea rows="2" onchange="updateItem(${index}, 'description', this.value)">${item.description || ''}</textarea>
+                `;
+                
+                // Acciones
+                const actionsCell = row.insertCell();
+                actionsCell.innerHTML = `
+                    <button onclick="toggleExpand(${index})" class="btn-expand" id="btn-${index}" title="Ver tallas y precios">
+                        <i class="fas fa-expand-alt"></i> Tallas
+                    </button>
+                    <button onclick="deleteItem(${index})" class="btn-delete">Eliminar</button>
+                `;
+                
+                // Subtabla expandible (fila extra)
+                const subRow = tbody.insertRow();
+                subRow.id = `sub-${index}`;
+                subRow.className = 'expanded hidden';
+                subRow.innerHTML = `
+                    <td colspan="3">
+                        <table class="subtable">
+                            <thead><tr><th>Talla</th><th>Precio / min / Mayor</th><th>Acciones</th></tr></thead>
+                            <tbody id="subbody-${index}"></tbody>
+                        </table>
+                        <button onclick="toggleExpand(${index})" class="btn-expand" style="margin-top: 5px;" id="sub-btn-${index}">
+                            <i class="fas fa-compress-alt"></i> Ocultar
+                        </button>
+                    </td>
+                `;
+                renderSubTable(index);
+            });
+            saveToLocalStorage();
+        }
+
+        // Renderizar subtabla de tallas
+        function renderSubTable(index) {
+            const subBody = document.getElementById(`subbody-${index}`);
+            if (!subBody) return; // Safety check
+            subBody.innerHTML = '';
+            let hasSizes = false;
+            availableSizes.forEach(size => {
+                if (clothingData[index].sizes && clothingData[index].sizes[size]) {
+                    hasSizes = true;
+                    const subRow = subBody.insertRow();
+                    subRow.innerHTML = `
+                        <td>${size}</td>
+                        <td><input type="number" value="${clothingData[index].sizes[size]}" step="0.01" onchange="updatePrice(${index}, '${size}', this.value)"></td>
+                        <td><button onclick="removeSize(${index}, '${size}')" class="btn-delete" style="padding: 2px 5px; font-size: 10px;">X</button></td>
+                    `;
+                }
+            });
+            if (!hasSizes) {
+                const emptyRow = subBody.insertRow();
+                emptyRow.innerHTML = '<td colspan="3" style="text-align: center; color: #999;">No hay tallas definidas. Agrega una abajo.</td>';
+            }
+            // Botón para agregar talla nueva
+            const addRow = subBody.insertRow();
+            addRow.innerHTML = `
+                <td colspan="3">
+                    <select id="new-size-${index}">
+                        <option value="">Agregar talla...</option>
+                        ${availableSizes.map(s => `<option value="${s}">${s}</option>`).join('')}
+                    </select>
+                    <input type="number" id="new-price-${index}" step="0.01" min="0" placeholder="Precio" style="width: 80px;">
+                    <button onclick="addSize(${index})" class="btn-save" style="padding: 2px 5px; font-size: 10px;">+</button>
+                </td>
+            `;
+        }
+
+        // Toggle expansión
+        function toggleExpand(index) {
+            const subRow = document.getElementById(`sub-${index}`);
+            if (!subRow) return;
+            const mainBtn = document.getElementById(`btn-${index}`);
+            const subBtn = document.getElementById(`sub-btn-${index}`);
+            const isHidden = subRow.classList.contains('hidden');
+            subRow.classList.toggle('hidden');
+            if (isHidden) { // Se abrió
+                mainBtn.innerHTML = '<i class="fas fa-compress-alt"></i> Ocultar';
+                if (subBtn) subBtn.innerHTML = '<i class="fas fa-compress-alt"></i> Ocultar';
+            } else { // Se cerró
+                mainBtn.innerHTML = '<i class="fas fa-expand-alt"></i> Tallas';
+                if (subBtn) subBtn.innerHTML = '<i class="fas fa-expand-alt"></i> Tallas';
+            }
+        }
+
+        // Actualizar ítem principal
+        function updateItem(index, field, value) {
+            if (clothingData[index]) {
+                clothingData[index][field] = value;
+                saveToLocalStorage();
+                renderTable();
+            }
+        }
+
+        // Actualizar precio de talla
+        function updatePrice(index, size, value) {
+            if (clothingData[index] && clothingData[index].sizes) {
+                const numValue = parseFloat(value);
+                if (!isNaN(numValue)) {
+                    clothingData[index].sizes[size] = numValue;
+                    saveToLocalStorage();
+                }
+            }
+        }
+
+        // Remover talla
+        function removeSize(index, size) {
+            if (confirm(`¿Eliminar talla ${size}?`)) {
+                if (clothingData[index] && clothingData[index].sizes) {
+                    delete clothingData[index].sizes[size];
+                    saveToLocalStorage();
+                    renderSubTable(index);
+                }
+            }
+        }
+
+        // Agregar talla nueva
+        function addSize(index) {
+            const sizeSelect = document.getElementById(`new-size-${index}`);
+            const priceInput = document.getElementById(`new-price-${index}`);
+            if (!sizeSelect || !priceInput) return;
+            const size = sizeSelect.value;
+            const price = priceInput.value;
+            if (size && price) {
+                const numPrice = parseFloat(price);
+                if (!isNaN(numPrice)) {
+                    if (!clothingData[index].sizes) clothingData[index].sizes = {};
+                    clothingData[index].sizes[size] = numPrice;
+                    saveToLocalStorage();
+                    priceInput.value = '';
+                    sizeSelect.value = '';
+                    renderSubTable(index);
+                } else {
+                    alert('Precio inválido.');
+                }
+            } else {
+                alert('Selecciona talla y precio.');
+            }
+        }
+
+        // Eliminar ítem completo
+        function deleteItem(index) {
+            if (confirm('¿Eliminar esta tela y todas sus tallas?')) {
+                clothingData.splice(index, 1);
+                renderTable();
+            }
+        }
+
+        // Guardar en localStorage
+        function saveToLocalStorage() {
+            try {
+                localStorage.setItem('clothingData', JSON.stringify(clothingData));
+            } catch (e) {
+                console.error('Error al guardar:', e);
+                alert('Error al guardar datos. Verifica el espacio en localStorage.');
+            }
+        }
+
+        // Manejar formulario de agregar
+        document.getElementById('addForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const sizes = {};
+            let hasSizes = false;
+            availableSizes.forEach(size => {
+                const checkbox = document.querySelector(`input[value="${size}"]`);
+                const priceInput = document.querySelector(`input.price-${size.toLowerCase()}`);
+                if (checkbox && checkbox.checked && priceInput && priceInput.value) {
+                    const numPrice = parseFloat(priceInput.value);
+                    if (!isNaN(numPrice)) {
+                        sizes[size] = numPrice;
+                        hasSizes = true;
+                    }
+                }
+            });
+            if (!hasSizes) {
+                alert('Agrega al menos una talla con precio válido.');
+                return;
+            }
+            const newItem = {
+                fabricType: document.getElementById('fabricType').value.trim(),
+                description: document.getElementById('description').value.trim(),
+                sizes: sizes
+            };
+            if (!newItem.fabricType || !newItem.description) {
+                alert('Tipo de tela y descripción son requeridos.');
+                return;
+            }
+            clothingData.push(newItem);
+            renderTable();
+            this.reset();
+            // Reset checkboxes explícitamente
+            document.querySelectorAll('#tallas-section input[type="checkbox"]').forEach(cb => cb.checked = false);
+        });
+
+        // Renderizar tabla inicial
+        renderTable();
+    </script>
+</body>
+</html>
