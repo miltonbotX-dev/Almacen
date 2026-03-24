@@ -1,382 +1,292 @@
 <!DOCTYPE html>
 <html lang="es">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Control y Pedidos de Ternos - Almacén</title>
   <style>
-    body {
-      font-family: Arial, Helvetica, sans-serif;
-      margin: 20px;
-      background: #f8f9fa;
-      color: #333;
-      line-height: 1.5;
-    }
+    body { font-family: Arial, Helvetica, sans-serif; margin: 20px; background: #f8f9fa; color: #333; line-height: 1.5; }
     h1 { color: #1a3c6d; text-align: center; margin-bottom: 8px; }
-    .update-info { text-align: center; color: #555; font-size: 0.95em; margin-bottom: 30px; }
+    .update-info { text-align: center; color: #555; font-size: 0.95em; margin-bottom: 20px; }
+    
+    /* Asesor Global */
+    .global-asesor { 
+        max-width: 500px; 
+        margin: 0 auto 30px auto; 
+        background: white; 
+        padding: 15px; 
+        border-radius: 8px; 
+        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+    .global-asesor input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em; }
 
-    details {
-      margin-bottom: 24px;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      overflow: hidden;
-      background: white;
-      box-shadow: 0 2px 6px rgba(0,0,0,0.1);
-    }
-    summary {
-      padding: 14px 18px;
-      background: #e9ecef;
-      font-weight: bold;
-      cursor: pointer;
-    }
+    details { margin-bottom: 24px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
+    summary { padding: 14px 18px; background: #e9ecef; font-weight: bold; cursor: pointer; }
     summary:hover { background: #dee2e6; }
-
-    .asesor-input {
-      padding: 12px 18px;
-      background: #f8f9fa;
-      border-bottom: 1px solid #ddd;
-    }
-    .asesor-input label { font-weight: bold; margin-right: 10px; }
-    .asesor-input input {
-      padding: 8px;
-      width: 220px;
-      border: 1px solid #ccc;
-      border-radius: 4px;
-    }
-
+    
     table { width: 100%; border-collapse: collapse; }
     th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; }
     th { background: #f1f3f5; font-weight: 600; color: #444; }
 
+    /* Colores de Telas */
     .tela-negro       { background: #f8f1f1; }
     .tela-azul        { background: #eef3ff; }
     .tela-plomo       { background: #f0f0f2; }
     .tela-lino        { background: #fff8e8; }
     .tela-manchester  { background: #e8f5e9; }
+    .tela-cobalto     { background: #e6f0ff; }
+    .tela-barcelona   { background: #f9e8d2; }
+    .tela-verde       { background: #e8f5e8; }
 
-    .cantidad-control {
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      justify-content: center;
-    }
-    .cantidad-control button {
-      width: 32px;
-      height: 32px;
-      font-size: 1.2em;
-      font-weight: bold;
-      background: #1976d2;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      cursor: pointer;
-    }
+    .cantidad-control { display: flex; align-items: center; gap: 6px; justify-content: center; }
+    .cantidad-control button { width: 32px; height: 32px; font-size: 1.2em; font-weight: bold; background: #1976d2; color: white; border: none; border-radius: 6px; cursor: pointer; }
     .cantidad-control button:hover { background: #0d47a1; }
     .cantidad-control button:disabled { background: #ccc; cursor: not-allowed; }
-    .cantidad-control span {
-      width: 50px;
-      text-align: center;
-      font-size: 1.1em;
-      font-weight: bold;
-      min-width: 40px;
-    }
+    .cantidad-control span { width: 50px; text-align: center; font-size: 1.1em; font-weight: bold; min-width: 40px; }
+    
     .cantidad-0 { color: #777; }
     .cantidad-ok { color: #2e7d32; }
-
-    .sin-stock { color: #c62828; font-style: italic; }
-
-    .btn-solicitar {
-      display: block;
-      margin: 16px auto;
-      padding: 10px 24px;
-      background: #2e7d32;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 1em;
-      cursor: pointer;
-    }
-    .btn-solicitar:hover { background: #1b5e20; }
-
-    .btn-copiar-todo {
-      display: block;
-      margin: 40px auto;
-      padding: 14px 32px;
-      background: #1976d2;
-      color: white;
-      border: none;
-      border-radius: 6px;
-      font-size: 1.1em;
-      cursor: pointer;
-    }
-    .btn-copiar-todo:hover { background: #0d47a1; }
-
-    .mensaje-copiado {
-      text-align: center;
-      color: #2e7d32;
-      font-weight: bold;
-      margin: 12px 0;
-      opacity: 0;
-      transition: opacity 0.4s;
-    }
+    .sin-stock { color: #c62828; font-style: italic; font-weight: bold; }
+    
+    .btn-solicitar { display: block; margin: 16px auto; padding: 10px 24px; background: #25d366; color: white; border: none; border-radius: 6px; font-size: 1em; cursor: pointer; font-weight: bold; }
+    .btn-solicitar:hover { background: #128c7e; }
+    
+    .btn-copiar-todo { display: block; margin: 40px auto; padding: 14px 32px; background: #1976d2; color: white; border: none; border-radius: 6px; font-size: 1.1em; cursor: pointer; font-weight: bold; }
+    
+    .mensaje-copiado { text-align: center; color: #2e7d32; font-weight: bold; margin: 12px 0; opacity: 0; transition: opacity 0.4s; }
     .mensaje-copiado.visible { opacity: 1; }
   </style>
 </head>
 <body>
 
 <h1>Ternos - Control y Pedidos</h1>
-<div class="update-info">Última actualización: 22 de enero de 2026 – 4:35 p.m.</div>
+<div class="update-info" id="fecha-update">Actualizando...</div>
 
-<details open>
-  <summary>Lanilla</summary>
+<!-- ASESOR GLOBAL -->
+<div class="global-asesor">
+    <strong>Asesor:</strong>
+    <input type="text" id="nombre-asesor" placeholder="Escribe tu nombre aquí...">
+</div>
 
-  <div class="asesor-input">
-    <label>Asesor que pide:</label>
-    <input type="text" class="asesor-nombre" placeholder="Ej: Joel Santos" />
-  </div>
+<div id="contenido"></div>
 
-  <!-- Negro -->
-  <table class="tela-negro">
-    <thead>
-      <tr>
-        <th>Color</th>
-        <th>Talla</th>
-        <th>Stock</th>
-        <th>Cantidad a pedir</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr data-tela="Lanilla" data-color="negro" data-talla="XS" data-stock="8">
-        <td>negro</td><td>XS</td><td>8</td>
-        <td><div class="cantidad-control">
-          <button onclick="cambiarCantidad(this, -1)">−</button>
-          <span class="cantidad-0">0</span>
-          <button onclick="cambiarCantidad(this, +1)">+</button>
-        </div></td>
-      </tr>
-      <tr data-tela="Lanilla" data-color="negro" data-talla="S" data-stock="3">
-        <td>negro</td><td>S</td><td>3</td>
-        <td><div class="cantidad-control">
-          <button onclick="cambiarCantidad(this, -1)">−</button>
-          <span class="cantidad-0">0</span>
-          <button onclick="cambiarCantidad(this, +1)">+</button>
-        </div></td>
-      </tr>
-      <tr data-tela="Lanilla" data-color="negro" data-talla="M" data-stock="6">
-        <td>negro</td><td>M</td><td>6</td>
-        <td><div class="cantidad-control">
-          <button onclick="cambiarCantidad(this, -1)">−</button>
-          <span class="cantidad-0">0</span>
-          <button onclick="cambiarCantidad(this, +1)">+</button>
-        </div></td>
-      </tr>
-      <tr data-tela="Lanilla" data-color="negro" data-talla="L" data-stock="6">
-        <td>negro</td><td>L</td><td>6</td>
-        <td><div class="cantidad-control">
-          <button onclick="cambiarCantidad(this, -1)">−</button>
-          <span class="cantidad-0">0</span>
-          <button onclick="cambiarCantidad(this, +1)">+</button>
-        </div></td>
-      </tr>
-      <tr data-tela="Lanilla" data-color="negro" data-talla="XL" data-stock="4">
-        <td>negro</td><td>XL</td><td>4</td>
-        <td><div class="cantidad-control">
-          <button onclick="cambiarCantidad(this, -1)">−</button>
-          <span class="cantidad-0">0</span>
-          <button onclick="cambiarCantidad(this, +1)">+</button>
-        </div></td>
-      </tr>
-      <tr data-tela="Lanilla" data-color="negro" data-talla="XXL" data-stock="0">
-        <td>negro</td><td>XXL</td><td class="sin-stock">0</td>
-        <td><div class="cantidad-control">
-          <button disabled>−</button>
-          <span class="cantidad-0">0</span>
-          <button disabled>+</button>
-        </div></td>
-      </tr>
-    </tbody>
-  </table>
-
-  <!-- Azul noche -->
-  <table class="tela-azul">
-    <thead>
-      <tr>
-        <th>Color</th>
-        <th>Talla</th>
-        <th>Stock</th>
-        <th>Cantidad a pedir</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr data-tela="Lanilla" data-color="azul noche" data-talla="S" data-stock="6">
-        <td>azul noche</td><td>S</td><td>6</td>
-        <td><div class="cantidad-control">
-          <button onclick="cambiarCantidad(this, -1)">−</button>
-          <span class="cantidad-0">0</span>
-          <button onclick="cambiarCantidad(this, +1)">+</button>
-        </div></td>
-      </tr>
-      <!-- Agrega más tallas de azul noche si las tienes -->
-    </tbody>
-  </table>
-
-  <!-- Plomo plata -->
-  <table class="tela-plomo">
-    <thead>
-      <tr>
-        <th>Color</th>
-        <th>Talla</th>
-        <th>Stock</th>
-        <th>Cantidad a pedir</th>
-      </tr>
-    </thead>
-    <tbody>
-      <tr data-tela="Lanilla" data-color="plomo plata" data-talla="—" data-stock="999">
-        <td>plomo plata</td><td>—</td><td>—</td>
-        <td><div class="cantidad-control">
-          <button onclick="cambiarCantidad(this, -1)">−</button>
-          <span class="cantidad-0">0</span>
-          <button onclick="cambiarCantidad(this, +1)">+</button>
-        </div></td>
-      </tr>
-      <!-- Agrega más tallas si existen -->
-    </tbody>
-  </table>
-
-  <button class="btn-solicitar" onclick="solicitarTela(this)">Solicitar estos ítems (Lanilla)</button>
-  <div class="mensaje-copiado">¡Copiado al portapapeles! → abre WhatsApp</div>
-</details>
-
-<!-- Aquí puedes agregar más <details> para Lino y Manchester siguiendo el mismo patrón -->
-
-<button class="btn-copiar-todo" onclick="copiarTodo()">Copiar TODOS los pedidos (agrupado por talla)</button>
-<div id="mensaje-global" class="mensaje-copiado">¡Copiado todo al portapapeles!</div>
+<button class="btn-copiar-todo" onclick="copiarTodo()">Enviar TODO el pedido</button>
+<div id="mensaje-global" class="mensaje-copiado">¡Abriendo WhatsApp y Copiado!</div>
 
 <script>
-// Orden de tallas para agrupar en el pedido global
-const ordenTallas = ['XS', 'S', 'M', 'L', 'XL', 'XXL', '3XL', '4XL'];
+// ==================== CONFIGURACIÓN ====================
+const WHATSAPP_NUMERO = "51916822330"; // CAMBIA ESTO por el número del almacén (con código de país)
+
+const csvData = `Tela,Color,ClaseCSS,Talla,Stock
+Casemir,negro,tela-negro,XS,4
+Casemir,negro,tela-negro,S,4
+Casemir,negro,tela-negro,M,4
+Casemir,negro,tela-negro,L,4
+Casemir,negro,tela-negro,XL,4
+Casemir,negro,tela-negro,XXL,4
+Casemir,azul noche,tela-azul,XS,8
+Casemir,azul noche,tela-azul,S,8
+Casemir,azul noche,tela-azul,M,8
+Casemir,azul noche,tela-azul,L,8
+Casemir,azul noche,tela-azul,XL,8
+Casemir,azul noche,tela-azul,XXL,8
+
+Lanilla,negro,tela-negro,XS,8
+Lanilla,negro,tela-negro,S,3
+Lanilla,negro,tela-negro,M,6
+Lanilla,negro,tela-negro,L,6
+Lanilla,negro,tela-negro,XL,4
+Lanilla,negro,tela-negro,XXL,0
+Lanilla,azul noche,tela-azul,XS,6
+Lanilla,azul noche,tela-azul,S,6
+Lanilla,azul noche,tela-azul,M,5
+Lanilla,azul noche,tela-azul,L,6
+Lanilla,azul noche,tela-azul,XL,6
+Lanilla,azul noche,tela-azul,XXL,6
+Lanilla,plomo plata,tela-plomo,UNICA,999
+Manchester,gris,tela-manchester,XL,4
+Manchester,gris,tela-manchester,XXL,2
+Lino yake,beige,tela-lino,S,12
+Lino yake,beige,tela-lino,M,8
+Lino yake,beige,tela-lino,L,7
+Lino tropical,negro,tela-negro,XS,5
+Lino berona,azul,tela-azul,XS,8
+lino dandy,cobalto,tela-cobalto,XS,9
+lino irlandes,azul,tela-azul,XS,4
+lino a cuadros,barcelona,tela-barcelona,XS,2
+lino egipcio,verde agua,tela-verde,XS,6`;
+
+const ordenTallas = ['XS','S','M','L','XL','XXL','3XL','4XL','UNICA'];
+
+// ==================== LÓGICA ====================
+
+function parseCSV(csv) {
+  const lines = csv.trim().split('\n');
+  const data = [];
+  for (let i = 1; i < lines.length; i++) {
+    const values = lines[i].split(',').map(v => v.trim());
+    if (values.length === 5) {
+      data.push({
+        tela: values[0], color: values[1], clase: values[2],
+        talla: values[3], stock: parseInt(values[4]) || 0
+      });
+    }
+  }
+  const grupos = {};
+  data.forEach(row => {
+    if (!grupos[row.tela]) grupos[row.tela] = {};
+    if (!grupos[row.tela][row.color]) grupos[row.tela][row.color] = { clase: row.clase, items: [] };
+    grupos[row.tela][row.color].items.push({ talla: row.talla, stock: row.stock });
+  });
+  return grupos;
+}
+
+function generarTodo() {
+  const grupos = parseCSV(csvData);
+  const container = document.getElementById('contenido');
+  document.getElementById('fecha-update').textContent = `Última actualización: ${new Date().toLocaleDateString()}`;
+  
+  container.innerHTML = '';
+
+  Object.keys(grupos).forEach(tela => {
+    const details = document.createElement('details');
+    details.innerHTML = `<summary>${tela}</summary>`;
+
+    Object.keys(grupos[tela]).forEach(color => {
+      const info = grupos[tela][color];
+      const table = document.createElement('table');
+      table.className = info.clase;
+
+      let html = '<thead><tr><th>Color</th><th>Talla</th><th>Stock</th><th>Cantidad</th></tr></thead><tbody>';
+      info.items.sort((a,b) => ordenTallas.indexOf(a.talla) - ordenTallas.indexOf(b.talla));
+
+      info.items.forEach(item => {
+        const stockDisplay = item.stock >= 999 ? '∞' : (item.stock === 0 ? '<span class="sin-stock">0</span>' : item.stock);
+        html += `
+          <tr data-tela="${tela}" data-color="${color}" data-talla="${item.talla}" data-stock="${item.stock}">
+            <td>${color}</td>
+            <td><strong>${item.talla}</strong></td>
+            <td>${stockDisplay}</td>
+            <td>
+              <div class="cantidad-control">
+                <button onclick="cambiarCantidad(this, -1)" disabled>−</button>
+                <span class="cantidad-0">0</span>
+                <button onclick="cambiarCantidad(this, +1)" ${item.stock === 0 ? 'disabled' : ''}>+</button>
+              </div>
+            </td>
+          </tr>`;
+      });
+      html += '</tbody>';
+      table.innerHTML = html;
+      details.appendChild(table);
+    });
+
+    const btn = document.createElement('button');
+    btn.className = 'btn-solicitar';
+    btn.innerHTML = `Enviar Pedido (${tela})`;
+    btn.onclick = () => solicitarTela(btn);
+    details.appendChild(btn);
+
+    const msg = document.createElement('div');
+    msg.className = 'mensaje-copiado';
+    msg.textContent = '¡Redirigiendo a WhatsApp...!';
+    details.appendChild(msg);
+
+    container.appendChild(details);
+  });
+}
 
 function cambiarCantidad(btn, delta) {
   const control = btn.parentElement;
   const span = control.querySelector('span');
   const row = control.closest('tr');
-  const stock = parseInt(row.dataset.stock) || 999;
-  let actual = parseInt(span.textContent) || 0;
+  const stockMax = parseInt(row.dataset.stock);
+  let actual = parseInt(span.textContent);
 
-  actual = Math.max(0, Math.min(stock, actual + delta));
-
+  actual = Math.max(0, Math.min(stockMax, actual + delta));
   span.textContent = actual;
   span.className = actual > 0 ? 'cantidad-ok' : 'cantidad-0';
-
-  const menosBtn = control.querySelector('button:first-child');
-  const masBtn   = control.querySelector('button:last-child');
-  menosBtn.disabled = actual <= 0;
-  masBtn.disabled   = actual >= stock;
+  control.querySelector('button:first-child').disabled = (actual <= 0);
+  control.querySelector('button:last-child').disabled = (actual >= stockMax);
 }
 
-function getFechaHora() {
-  const ahora = new Date();
-  return ahora.toLocaleString('es-PE', {
-    day: '2-digit',
-    month: '2-digit',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false
+function procesarYEnviar(items, titulo, elementoAviso) {
+  const asesor = document.getElementById('nombre-asesor').value.trim() || "No especificado";
+  const fecha = new Date().toLocaleString('es-PE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+
+  items.sort((a,b) => ordenTallas.indexOf(a.talla) - ordenTallas.indexOf(b.talla));
+
+  let texto = `*${titulo}*\n`;
+  texto += `👤 *Asesor:* ${asesor}\n`;
+  texto += ` *Fecha:* ${fecha}\n`;
+  texto += `──────────────────\n`;
+
+  let currentTalla = null;
+  items.forEach(item => {
+    if (item.talla !== currentTalla) {
+      texto += `\n✓ *TALLA ${item.talla}*\n`;
+      currentTalla = item.talla;
+    }
+    texto += `• ${item.tela} (${item.color}) → *${item.cantidad} und.*\n`;
   });
+  texto += `\n──────────────────`;
+
+  // 1. Copiar al portapapeles (Respaldo)
+  navigator.clipboard.writeText(texto);
+
+  // 2. Abrir WhatsApp
+  const url = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(texto)}`;
+  
+  elementoAviso.classList.add('visible');
+  setTimeout(() => {
+      elementoAviso.classList.remove('visible');
+      window.open(url, '_blank');
+  }, 800);
 }
 
 function solicitarTela(btn) {
   const details = btn.closest('details');
-  const asesor = details.querySelector('.asesor-nombre')?.value.trim() || 'Sin nombre';
   const rows = details.querySelectorAll('tr[data-talla]');
-  let texto = `PEDIDO DE TERNOS - ${details.querySelector('summary').textContent.toUpperCase()}\n`;
-  texto += `Asesor: ${asesor}\n\n`;
+  let items = [];
 
-  let hayAlgo = false;
   rows.forEach(row => {
-    const cantidad = parseInt(row.querySelector('span').textContent) || 0;
-    if (cantidad > 0) {
-      hayAlgo = true;
-      const color = row.dataset.color;
-      const talla = row.dataset.talla;
-      texto += `• ${color} - ${talla} → ${cantidad} und.\n`;
+    const cant = parseInt(row.querySelector('span').textContent);
+    if (cant > 0) {
+      items.push({ 
+        tela: row.dataset.tela, color: row.dataset.color, 
+        talla: row.dataset.talla, cantidad: cant 
+      });
     }
   });
 
-  if (!hayAlgo) {
-    alert("No hay cantidades > 0 en esta tela.");
-    return;
-  }
-
-  texto += `\n${getFechaHora()}`;
-  copiarAlPortapapeles(texto, btn.nextElementSibling);
+  if (items.length === 0) return alert("Selecciona cantidades primero.");
+  
+  procesarYEnviar(items, "PEDIDO DE TERNOS", btn.nextElementSibling);
 }
 
 function copiarTodo() {
-  const detailsList = document.querySelectorAll('details');
+  const allRows = document.querySelectorAll('tr[data-talla]');
   let items = [];
 
-  detailsList.forEach(details => {
-    const tela = details.querySelector('summary').textContent.trim();
-    const asesor = details.querySelector('.asesor-nombre')?.value.trim() || '';
-    const rows = details.querySelectorAll('tr[data-talla]');
-
-    rows.forEach(row => {
-      const cantidad = parseInt(row.querySelector('span').textContent) || 0;
-      if (cantidad > 0) {
-        items.push({
-          tela: tela,
-          color: row.dataset.color,
-          talla: row.dataset.talla,
-          cantidad: cantidad,
-          asesor: asesor
-        });
-      }
-    });
-  });
-
-  if (items.length === 0) {
-    alert("No hay ningún pedido con cantidad > 0.");
-    return;
-  }
-
-  // Ordenar por talla
-  items.sort((a, b) => {
-    let idxA = ordenTallas.indexOf(a.talla);
-    let idxB = ordenTallas.indexOf(b.talla);
-    if (idxA === -1) idxA = 999;
-    if (idxB === -1) idxB = 999;
-    return idxA - idxB;
-  });
-
-  let texto = "PEDIDO MASIVO DE TERNOS (ordenado por talla)\n\n";
-  let currentTalla = null;
-
-  items.forEach(item => {
-    if (item.talla !== currentTalla) {
-      if (currentTalla !== null) texto += "\n";
-      texto += `TALLA ${item.talla}\n`;
-      currentTalla = item.talla;
+  allRows.forEach(row => {
+    const cant = parseInt(row.querySelector('span').textContent);
+    if (cant > 0) {
+      items.push({ 
+        tela: row.dataset.tela, color: row.dataset.color, 
+        talla: row.dataset.talla, cantidad: cant 
+      });
     }
-    texto += `• ${item.tela} - ${item.color} → ${item.cantidad} und.`;
-    if (item.asesor) texto += ` (${item.asesor})`;
-    texto += "\n";
   });
 
-  texto += `\n${getFechaHora()}`;
-  copiarAlPortapapeles(texto, document.getElementById('mensaje-global'));
+  if (items.length === 0) return alert("No hay ningún pedido seleccionado.");
+  
+  procesarYEnviar(items, "PEDIDO GENERAL DE TERNOS", document.getElementById('mensaje-global'));
 }
 
-function copiarAlPortapapeles(texto, elementoMensaje) {
-  navigator.clipboard.writeText(texto).then(() => {
-    elementoMensaje.classList.add('visible');
-    setTimeout(() => elementoMensaje.classList.remove('visible'), 3000);
-  }).catch(() => {
-    alert("No se pudo copiar automáticamente.\n\nTexto:\n" + texto);
-  });
-}
+window.onload = generarTodo;
 </script>
-
 </body>
 </html>
