@@ -4,84 +4,115 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Control y Pedidos de Ternos - Almacén</title>
+  
   <style>
-    body { font-family: Arial, Helvetica, sans-serif; margin: 20px; background: #f8f9fa; color: #333; line-height: 1.5; }
-    h1 { color: #1a3c6d; text-align: center; margin-bottom: 8px; }
-    .update-info { text-align: center; color: #555; font-size: 0.95em; margin-bottom: 20px; }
+    /* 1. BLOQUEO DE SELECCIÓN DE TEXTO */
+    body, html {
+        -webkit-user-select: none;
+        -moz-user-select: none;
+        -ms-user-select: none;
+        user-select: none;
+    }
+
+    /* Permitir interacción con inputs y botones */
+    input, button, .cantidad-control span {
+        -webkit-user-select: text !important;
+        -moz-user-select: text !important;
+        user-select: text !important;
+    }
+
+    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 20px; background: #f4f7f6; color: #333; line-height: 1.5; }
+    h1 { color: #2c3e50; text-align: center; margin-bottom: 5px; }
+    .update-info { text-align: center; color: #7f8c8d; font-size: 0.9em; margin-bottom: 25px; font-style: italic; }
     
-    /* Asesor Global */
     .global-asesor { 
         max-width: 500px; 
         margin: 0 auto 30px auto; 
         background: white; 
         padding: 15px; 
-        border-radius: 8px; 
-        box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        border-radius: 10px; 
+        box-shadow: 0 4px 6px rgba(0,0,0,0.05);
         display: flex;
         align-items: center;
         gap: 10px;
+        border: 1px solid #e0e0e0;
     }
-    .global-asesor input { flex: 1; padding: 10px; border: 1px solid #ddd; border-radius: 4px; font-size: 1em; }
+    .global-asesor input { flex: 1; padding: 10px; border: 1px solid #ccc; border-radius: 5px; font-size: 1em; outline: none; }
+    .global-asesor input:focus { border-color: #3498db; }
 
-    details { margin-bottom: 24px; border: 1px solid #ddd; border-radius: 8px; overflow: hidden; background: white; box-shadow: 0 2px 6px rgba(0,0,0,0.1); }
-    summary { padding: 14px 18px; background: #e9ecef; font-weight: bold; cursor: pointer; }
-    summary:hover { background: #dee2e6; }
+    details { margin-bottom: 20px; border: 1px solid #d1d8e0; border-radius: 10px; overflow: hidden; background: white; box-shadow: 0 2px 5px rgba(0,0,0,0.05); }
+    summary { padding: 15px; background: #f8f9fa; font-weight: bold; cursor: pointer; color: #2c3e50; border-bottom: 1px solid #eee; }
+    summary:hover { background: #edf2f7; }
     
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #eee; }
-    th { background: #f1f3f5; font-weight: 600; color: #444; }
+    table { width: 100%; border-collapse: collapse; margin-bottom: 10px; }
+    th, td { padding: 12px; text-align: left; border-bottom: 1px solid #f0f0f0; }
+    th { background: #fdfdfd; font-weight: 600; color: #7f8c8d; text-transform: uppercase; font-size: 0.85em; }
 
-    /* Colores de Telas */
-    .tela-negro       { background: #f8f1f1; }
-    .tela-azul        { background: #eef3ff; }
-    .tela-plomo       { background: #f0f0f2; }
-    .tela-lino        { background: #fff8e8; }
-    .tela-manchester  { background: #e8f5e9; }
-    .tela-cobalto     { background: #e6f0ff; }
-    .tela-barcelona   { background: #f9e8d2; }
-    .tela-verde       { background: #e8f5e8; }
+    /* 3. COLORES ELEGANTES Y SUAVES (PASTEL) */
+    .tela-negro       { background-color: #f9f9f9; } /* Gris casi blanco */
+    .tela-azul        { background-color: #ebf4ff; } /* Azul pastel */
+    .tela-plomo       { background-color: #f2f2f2; } /* Gris suave */
+    .tela-rata        { background-color: #e2e2e2; } /* Gris medio */
+    .tela-charcol     { background-color: #eceff1; } /* Azul grisáceo */
+    .tela-manchester  { background-color: #f0fff4; } /* Verde menta muy suave */
+    .tela-oscuro      { background-color: #f1f3f5; } 
+    .tela-rayas       { background-color: #fffaf0; } /* Crema */
+    .tela-neovos      { background-color: #f3e5f5; } /* Lavanda suave */
+    .tela-marino      { background-color: #e3f2fd; } /* Celeste claro */
+    .tela-lino        { background-color: #fef9e7; } /* Amarillito suave */
+    .tela-verde       { background-color: #e8f5e9; } /* Verde pálido */
+    .tela-barcelona   { background-color: #fff5f2; } /* Salmón muy claro */
+    .tela-cobalto     { background-color: #e0f7fa; } /* Cian suave */
 
-    .cantidad-control { display: flex; align-items: center; gap: 6px; justify-content: center; }
-    .cantidad-control button { width: 32px; height: 32px; font-size: 1.2em; font-weight: bold; background: #1976d2; color: white; border: none; border-radius: 6px; cursor: pointer; }
-    .cantidad-control button:hover { background: #0d47a1; }
-    .cantidad-control button:disabled { background: #ccc; cursor: not-allowed; }
-    .cantidad-control span { width: 50px; text-align: center; font-size: 1.1em; font-weight: bold; min-width: 40px; }
+    .cantidad-control { display: flex; align-items: center; gap: 8px; justify-content: center; }
+    .cantidad-control button { 
+        width: 30px; height: 30px; border-radius: 50%; border: none; 
+        background: #3498db; color: white; font-weight: bold; cursor: pointer; 
+        transition: transform 0.1s, background 0.2s;
+    }
+    .cantidad-control button:hover { background: #2980b9; transform: scale(1.1); }
+    .cantidad-control button:disabled { background: #bdc3c7; cursor: not-allowed; transform: none; }
+    .cantidad-control span { width: 30px; text-align: center; font-weight: bold; font-size: 1.1em; }
     
-    .cantidad-0 { color: #777; }
-    .cantidad-ok { color: #2e7d32; }
-    .sin-stock { color: #c62828; font-style: italic; font-weight: bold; }
+    .cantidad-0 { color: #bdc3c7; }
+    .cantidad-ok { color: #27ae60; }
+    .sin-stock { color: #e74c3c; font-weight: bold; font-size: 0.9em; }
     
-    .btn-solicitar { display: block; margin: 16px auto; padding: 10px 24px; background: #25d366; color: white; border: none; border-radius: 6px; font-size: 1em; cursor: pointer; font-weight: bold; }
-    .btn-solicitar:hover { background: #128c7e; }
+    .btn-solicitar { display: block; margin: 15px auto; padding: 10px 25px; background: #2ecc71; color: white; border: none; border-radius: 25px; font-size: 0.9em; cursor: pointer; font-weight: bold; }
+    .btn-solicitar:hover { background: #27ae60; }
     
-    .btn-copiar-todo { display: block; margin: 40px auto; padding: 14px 32px; background: #1976d2; color: white; border: none; border-radius: 6px; font-size: 1.1em; cursor: pointer; font-weight: bold; }
+    .btn-copiar-todo { display: block; margin: 40px auto; padding: 18px 40px; background: #34495e; color: white; border: none; border-radius: 8px; font-size: 1.1em; cursor: pointer; font-weight: bold; box-shadow: 0 4px 15px rgba(0,0,0,0.2); }
+    .btn-copiar-todo:hover { background: #2c3e50; }
     
-    .mensaje-copiado { text-align: center; color: #2e7d32; font-weight: bold; margin: 12px 0; opacity: 0; transition: opacity 0.4s; }
+    .mensaje-copiado { text-align: center; color: #27ae60; font-weight: bold; margin: 12px 0; opacity: 0; transition: opacity 0.4s; }
     .mensaje-copiado.visible { opacity: 1; }
   </style>
 </head>
 <body>
 
 <h1>Ternos - Control y Pedidos</h1>
-<div class="update-info" id="fecha-update">Actualizando...</div>
+<!-- 2. ACTUALIZACIÓN MANUAL -->
+<div class="update-info" id="fecha-update">Última actualización: 05/10/2023 | 10:30 a.m.</div>
 
-<!-- ASESOR GLOBAL -->
 <div class="global-asesor">
     <strong>Asesor:</strong>
-    <input type="text" id="nombre-asesor" placeholder="Escribe tu nombre aquí...">
+    <input type="text" id="nombre-asesor" placeholder="Ingresa tu nombre...">
 </div>
 
 <div id="contenido"></div>
 
-<button class="btn-copiar-todo" onclick="copiarTodo()">Enviar TODO el pedido</button>
-<div id="mensaje-global" class="mensaje-copiado">¡Abriendo WhatsApp y Copiado!</div>
+<button class="btn-copiar-todo" onclick="copiarTodo()">ENVIAR PEDIDO COMPLETO</button>
+<div id="mensaje-global" class="mensaje-copiado">¡Redirigiendo a WhatsApp...!</div>
 
 <script>
 // ==================== CONFIGURACIÓN ====================
-const WHATSAPP_NUMERO = "51916822330"; // CAMBIA ESTO por el número del almacén (con código de país)
+const WHATSAPP_NUMERO = "51916822330"; 
+
+// Puedes cambiar esta fecha manualmente aquí:
+const FECHA_MANUAL = "22/05/2024 | 04:15 p.m.";
 
 const csvData = `Tela,Color,ClaseCSS,Talla,Stock
-Casemir,negro,tela-negro,XS,4
+Casemir,negro,tela-negro,XS,0
 Casemir,negro,tela-negro,S,4
 Casemir,negro,tela-negro,M,4
 Casemir,negro,tela-negro,L,4
@@ -93,7 +124,6 @@ Casemir,azul noche,tela-azul,M,8
 Casemir,azul noche,tela-azul,L,8
 Casemir,azul noche,tela-azul,XL,8
 Casemir,azul noche,tela-azul,XXL,8
-
 Lanilla,negro,tela-negro,XS,8
 Lanilla,negro,tela-negro,S,3
 Lanilla,negro,tela-negro,M,6
@@ -106,17 +136,116 @@ Lanilla,azul noche,tela-azul,M,5
 Lanilla,azul noche,tela-azul,L,6
 Lanilla,azul noche,tela-azul,XL,6
 Lanilla,azul noche,tela-azul,XXL,6
-Lanilla,plomo plata,tela-plomo,UNICA,999
-Manchester,gris,tela-manchester,XL,4
-Manchester,gris,tela-manchester,XXL,2
-Lino yake,beige,tela-lino,S,12
-Lino yake,beige,tela-lino,M,8
-Lino yake,beige,tela-lino,L,7
-Lino tropical,negro,tela-negro,XS,5
-Lino berona,azul,tela-azul,XS,8
-lino dandy,cobalto,tela-cobalto,XS,9
+Lanilla,plomo plata,tela-plomo,XS,5
+Lanilla,plomo plata,tela-plomo,S,5
+Lanilla,plomo plata,tela-plomo,M,5
+Lanilla,plomo plata,tela-plomo,L,5
+Lanilla,plomo plata,tela-plomo,XL,5
+Lanilla,plomo plata,tela-plomo,XXL,5
+Lanilla,plomo rata,tela-rata,XS,5
+Lanilla,plomo rata,tela-rata,S,5
+Lanilla,plomo rata,tela-rata,M,5
+Lanilla,plomo rata,tela-rata,L,5
+Lanilla,plomo rata,tela-rata,XL,5
+Lanilla,plomo rata,tela-rata,XXL,5
+Lanilla strech,charcol,tela-charcol,XS,5
+Lanilla strech,charcol,tela-charcol,S,5
+Lanilla strech,charcol,tela-charcol,M,5
+Lanilla strech,charcol,tela-charcol,L,5
+Lanilla strech,charcol,tela-charcol,XL,5
+Lanilla strech,charcol,tela-charcol,XXL,5
+Manchester,Barcelona claro,tela-manchester,XS,4
+Manchester,Barcelona claro,tela-manchester,S,4
+Manchester,Barcelona claro,tela-manchester,M,4
+Manchester,Barcelona claro,tela-manchester,L,4
+Manchester,Barcelona claro,tela-manchester,XXL,4
+Manchester,Barcelona oscuro,tela-oscuro,XS,4
+Manchester,Barcelona oscuro,tela-oscuro,S,4
+Manchester,Barcelona oscuro,tela-oscuro,M,4
+Manchester,Barcelona oscuro,tela-oscuro,L,4
+Manchester,Barcelona oscuro,tela-oscuro,XL,4
+Manchester,Barcelona oscuro,tela-oscuro,XXL,4
+Manchester Mil rayas,negro,tela-rayas,XS,5
+Manchester Mil rayas,negro,tela-rayas,S,5
+Manchester Mil rayas,negro,tela-rayas,M,5
+Manchester Mil rayas,negro,tela-rayas,L,5
+Manchester Mil rayas,negro,tela-rayas,XL,5
+Manchester Mil rayas,negro,tela-rayas,XXL,5
+Manchester Mil rayas,azul noche,tela-rayas,XS,5
+Manchester Mil rayas,azul noche,tela-rayas,S,5
+Manchester Mil rayas,azul noche,tela-rayas,M,5
+Manchester Mil rayas,azul noche,tela-rayas,L,5
+Manchester Mil rayas,azul noche,tela-rayas,XL,5
+Manchester Mil rayas,azul noche,tela-rayas,XXL,5
+Manchester Mil rayas,azul marino,tela-rayas,XS,5
+Manchester Mil rayas,azul marino,tela-rayas,S,5
+Manchester Mil rayas,azul marino,tela-rayas,M,5
+Manchester Mil rayas,azul marino,tela-rayas,L,5
+Manchester Mil rayas,azul marino,tela-rayas,XL,5
+Manchester Mil rayas,azul marino,tela-rayas,XXL,5
+Neovos, Negro,tela-neovos,XS,3
+Neovos, Negro,tela-neovos,S,3
+Neovos, Negro,tela-neovos,M,3
+Neovos, Negro,tela-neovos,L,3
+Neovos, Negro,tela-neovos,XL,3
+Neovos, Negro,tela-neovos,XXL,3
+Neovos, Azul noche,tela-neovos,XS,4
+Neovos, Azul noche,tela-neovos,S,4
+Neovos, Azul noche,tela-neovos,M,4
+Neovos, Azul noche,tela-neovos,L,4
+Neovos, Azul noche,tela-neovos,XL,4
+Neovos, Azul noche,tela-neovos,XXL,4
+Panal, Negro,tela-negro,XS,2
+Panal, Negro,tela-negro,S,2
+Panal, Negro,tela-negro,M,2
+Panal, Negro,tela-negro,L,2
+Panal, Negro,tela-negro,XL,2
+Panal, Negro,tela-negro,XXL,2
+Panal, Marino,tela-marino,XS,2
+Panal, Marino,tela-marino,S,2
+Panal, Marino,tela-marino,M,2
+Panal, Marino,tela-marino,L,2
+Panal, Marino,tela-marino,XL,2
+Panal, Marino,tela-marino,XXL,2
+Lino yake,Negro,tela-lino,XS,7
+Lino yake,Negro,tela-lino,S,12
+Lino yake,Negro,tela-lino,M,8
+Lino yake,Negro,tela-lino,L,7
+Lino yake,Negro,tela-lino,XL,7
+Lino yake,Negro,tela-lino,XXL,7
+Lino yake,Azul noche,tela-azul,XS,5
+Lino yake,Azul noche,tela-azul,S,5
+Lino yake,Azul noche,tela-azul,M,5
+Lino yake,Azul noche,tela-azul,L,5
+Lino yake,Azul noche,tela-azul,XL,5
+Lino yake,Azul noche,tela-azul,XXL,5
+Lino tropical, Negro,tela-negro,XS,1
+Lino tropical, Negro,tela-negro,S,1
+Lino tropical, Negro,tela-negro,M,1
+Lino tropical, Negro,tela-negro,L,1
+Lino tropical, Negro,tela-negro,XL,1
+Lino tropical, Negro,tela-negro,XXL,1
+Lino tropical,Azul noche,tela-azul,XS,5
+Lino tropical,Azul noche,tela-azul,S,5
+Lino tropical,Azul noche,tela-azul,M,5
+Lino tropical,Azul noche,tela-azul,L,5
+Lino tropical,Azul noche,tela-azul,XL,5
+Lino tropical,Azul noche,tela-azul,XXL,5
+Lino tropical,Hueso,tela-rayas,XS,5
+Lino tropical,Hueso,tela-rayas,S,5
+Lino tropical,Hueso,tela-rayas,M,5
+Lino tropical,Hueso,tela-rayas,L,5
+Lino tropical,Hueso,tela-rayas,XL,5
+Lino tropical,Hueso,tela-rayas,XXL,5
+lino a cuadros,barcelona,tela-barcelona,XS,5
+lino a cuadros,barcelona,tela-barcelona,S,5
+lino a cuadros,barcelona,tela-barcelona,M,5
+lino a cuadros,barcelona,tela-barcelona,L,5
+lino a cuadros,barcelona,tela-barcelona,XL,5
+lino a cuadros,barcelona,tela-barcelona,XXL,5
+
 lino irlandes,azul,tela-azul,XS,4
-lino a cuadros,barcelona,tela-barcelona,XS,2
+lino dandy,cobalto,tela-cobalto,XS,9
 lino egipcio,verde agua,tela-verde,XS,6`;
 
 const ordenTallas = ['XS','S','M','L','XL','XXL','3XL','4XL','UNICA'];
@@ -147,7 +276,8 @@ function parseCSV(csv) {
 function generarTodo() {
   const grupos = parseCSV(csvData);
   const container = document.getElementById('contenido');
-  document.getElementById('fecha-update').textContent = `Última actualización: ${new Date().toLocaleDateString()}`;
+  // Aplicar fecha manual
+  document.getElementById('fecha-update').textContent = `Última actualización: ${FECHA_MANUAL}`;
   
   container.innerHTML = '';
 
@@ -158,13 +288,13 @@ function generarTodo() {
     Object.keys(grupos[tela]).forEach(color => {
       const info = grupos[tela][color];
       const table = document.createElement('table');
-      table.className = info.clase;
+      table.className = info.clase; // Aquí aplica el color de fondo
 
       let html = '<thead><tr><th>Color</th><th>Talla</th><th>Stock</th><th>Cantidad</th></tr></thead><tbody>';
       info.items.sort((a,b) => ordenTallas.indexOf(a.talla) - ordenTallas.indexOf(b.talla));
 
       info.items.forEach(item => {
-        const stockDisplay = item.stock >= 999 ? '∞' : (item.stock === 0 ? '<span class="sin-stock">0</span>' : item.stock);
+        const stockDisplay = item.stock >= 999 ? '∞' : (item.stock === 0 ? '<span class="sin-stock">Agotado</span>' : item.stock);
         html += `
           <tr data-tela="${tela}" data-color="${color}" data-talla="${item.talla}" data-stock="${item.stock}">
             <td>${color}</td>
@@ -186,7 +316,7 @@ function generarTodo() {
 
     const btn = document.createElement('button');
     btn.className = 'btn-solicitar';
-    btn.innerHTML = `Enviar Pedido (${tela})`;
+    btn.innerHTML = `Enviar Pedido de ${tela}`;
     btn.onclick = () => solicitarTela(btn);
     details.appendChild(btn);
 
@@ -215,8 +345,9 @@ function cambiarCantidad(btn, delta) {
 
 function procesarYEnviar(items, titulo, elementoAviso) {
   const asesor = document.getElementById('nombre-asesor').value.trim() || "No especificado";
-  const fecha = new Date().toLocaleString('es-PE', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+  const fecha = FECHA_MANUAL;
 
+  // Ordenar por talla
   items.sort((a,b) => ordenTallas.indexOf(a.talla) - ordenTallas.indexOf(b.talla));
 
   let texto = `*${titulo}*\n`;
@@ -234,10 +365,10 @@ function procesarYEnviar(items, titulo, elementoAviso) {
   });
   texto += `\n──────────────────`;
 
-  // 1. Copiar al portapapeles (Respaldo)
+  // Copiar al portapapeles por si falla la redirección
   navigator.clipboard.writeText(texto);
 
-  // 2. Abrir WhatsApp
+  // Abrir WhatsApp
   const url = `https://wa.me/${WHATSAPP_NUMERO}?text=${encodeURIComponent(texto)}`;
   
   elementoAviso.classList.add('visible');
@@ -281,7 +412,7 @@ function copiarTodo() {
     }
   });
 
-  if (items.length === 0) return alert("No hay ningún pedido seleccionado.");
+  if (items.length === 0) return alert("No has seleccionado ningún producto.");
   
   procesarYEnviar(items, "PEDIDO GENERAL DE TERNOS", document.getElementById('mensaje-global'));
 }
